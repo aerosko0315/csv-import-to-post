@@ -100,8 +100,6 @@ Upload.prototype.doUpload = function () {
     var p_fields = toObject(p_keys, p_values);
     var c_fields = toObject(c_keys, c_values);
 
-    console.log(p_fields);
-
 
     // add assoc key values, this will be posts values
     formData.append("file", this.file, this.getName());
@@ -143,7 +141,8 @@ Upload.prototype.doUpload = function () {
         data: formData,
         cache: false,
         contentType: false,
-        processData: false
+        processData: false,
+        timeout: 1200000
     });
 };
 

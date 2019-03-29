@@ -16,7 +16,7 @@
  * Plugin Name:       Smashstack CSV Importer
  * Plugin URI:        https://www.smashstack.com/
  * Description:       This is a short description of what the plugin does. It's displayed in the WordPress admin area.
- * Version:           1.0.3
+ * Version:           1.2.0
  * Author:            smashstack-aeros
  * Author URI:        https://www.smashstack.com/
  * License:           GPL-2.0+

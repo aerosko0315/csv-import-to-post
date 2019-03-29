@@ -318,10 +318,10 @@ class Smashstack_Csv_Importer_Admin {
 			$response['status'] = 'Success';
 
 			if( $count > 0 ) {
-				$response['message'] =  '<b>'. $count .'</b> successfully added posts.<br>';
+				$response['message'] =  '<b>'. $count .'</b> Posts successfully added.<br>';
 			}
 			if( $update_count > 0 ) {
-				$response['message'] .=  '<b>'. $update_count .'</b> updated post content.<br>';
+				$response['message'] .=  '<b>'. $update_count .'</b> Posts successfully updated.<br>';
 			}
 		}
 
