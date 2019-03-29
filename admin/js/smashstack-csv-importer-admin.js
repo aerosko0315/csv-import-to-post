@@ -121,20 +121,20 @@ Upload.prototype.doUpload = function () {
             }
             return myXhr;
         },
-        success: function (data) { console.log(data);
-            //var output = $.parseJSON(data); console.log(data);
-            // your callback here
-            // if( output.status == 'Success' ) {
-            //     $('.csv-upload-status').find('p.import').removeClass('loading');
-            //     $('.csv-upload-status').find('p.import').addClass('done');
+        success: function (data) { ///console.log(data);
+            var output = $.parseJSON(data);
 
-            //     $('.csv-upload-status').append('<p class="msg-success">'+ output.message +'</p>');
-            // }
-            // else {
-            //     for(var i=0;i < data['errors'].length;i++) {
-            //         $('.csv-upload-status').html('<p class="msg-error">'+ output.errors[i] +'</p>');
-            //     }
-            // }
+            if( output.status == 'Success' ) {
+                $('.csv-upload-status').find('p.import').removeClass('loading');
+                $('.csv-upload-status').find('p.import').addClass('done');
+
+                $('.csv-upload-status').append('<p class="msg-success">'+ output.message +'</p>');
+            }
+            else {
+                for(var i=0;i < data['errors'].length;i++) {
+                    $('.csv-upload-status').html('<p class="msg-error">'+ output.errors[i] +'</p>');
+                }
+            }
         },
         error: function (error) {
            $('.csv-upload-status').html('<p class="msg-error">'+ JSON.stringify(error) +'</p>')

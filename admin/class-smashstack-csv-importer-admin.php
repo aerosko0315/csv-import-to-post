@@ -165,8 +165,10 @@ class Smashstack_Csv_Importer_Admin {
 		$p_fields = json_decode( stripslashes($_POST['p_fields']), true ); // standard post fields
 		$c_fields = json_decode( stripslashes($_POST['c_fields']), true ); // custom post fields
 		$wpdb = $this->wpdb;
+		$this->post_type = $post_type;
 
 		$data = array();
+		$meta = array();
 		$response = array();		
 		$errors = array();
 
@@ -178,11 +180,14 @@ class Smashstack_Csv_Importer_Admin {
 	        while ( $row = fgetcsv( $_file ) ) {
 	            foreach ( $header as $i => $key ) {
 	            	if( array_key_exists($key, $p_fields) ) {
-		            	$k = str_replace(' ', '_', $key);
 	                    $post[$p_fields[$key]] = $row[$i];
 	                }
+	                if( array_key_exists($key, $c_fields) ) {
+	                	$custom_fields[$c_fields[$key]] = $row[$i];
+ 	                }
                 }
                 $data[] = $post;
+                $meta[] = $custom_fields;
 	        }
 			fclose( $_file );
 		} else {
@@ -192,10 +197,12 @@ class Smashstack_Csv_Importer_Admin {
 
 		$urls = array();
 		$count = 0;
-		$skip = 0;
-		$c_count = 0;
-		foreach ( $data as $post ) {	
+		$update_count = 0;
+		$return = array();
+		foreach ( $data as $idx => $post ) {	
 			
+			$post["post_type"] = $post_type;
+
 			if( isset($post["post_author"]) ) {
 				//insert author of not exist, get ID
 				$author_id = username_exists( $post["post_author"] );
@@ -242,9 +249,6 @@ class Smashstack_Csv_Importer_Admin {
 				//convert tags to array and remove whitespaces
 				$post["tags_input"] = array_map( 'trim', explode(',', $tags) );
 			}
-			if( isset($post["post_title"]) ) {
-				$post_exists = $this->post_exists( $post["post_title"], 'post_title' );
-			}
 			if( isset( $post["post_name"] ) ) {
 				// get post slug from URL
 				$tokens = explode('/', $post["post_name"]);
@@ -252,28 +256,52 @@ class Smashstack_Csv_Importer_Admin {
 
 				$post["post_name"] = trim($slug);
 
-				$post_exists = $this->post_exists( $post["post_name"], 'post_name' );
+				$post_name_exists = $this->post_exists( $post["post_name"], 'post_name' );
+
+				if( $post_name_exists ) {
+					$post["ID"] = $this->get_post_by_name( $post["post_name"] );
+					wp_update_post( $post );
+
+					if( !empty($c_fields) ) {
+						foreach ($meta[$idx] as $k => $v) {
+							update_post_meta( $post["ID"], 'wpcf-'. $k, $v );
+						}
+					}
+
+					$update_count++;
+					continue;
+				}
 			}
+			if( isset($post["post_title"]) ) {
+				$post_title_exists = $this->post_exists( $post["post_title"], 'post_title' );
 
+				if( $post_title_exists ) {
+					$post["ID"] = $this->get_post_by_title( $post["post_title"] );
+					wp_update_post( $post );
 
-			// If the post exists, skip this post and go to the next one
-			if ( $post_exists ) {
-				$current_post = get_posts( array('name' => $slug, 'post_type' => $post_type) )[0];				
+					if( !empty($c_fields) ) {
+						foreach ($meta[$idx] as $k => $v) {
+							update_post_meta( $post["ID"], 'wpcf-'. $k, $v );
+						}
+					}
 
-				$post_arg["ID"] = $current_post->ID;
-				wp_update_post( $post ); // update existing post
-
-				continue;
-			}	
-			
+					$update_count++;
+					continue;
+				}
+			}			
 
 			// Insert the post into the database
-			$post_arg["post_type"] = $post_type;
-			$post['id'] = wp_insert_post( $post );
+			$post["id"] = wp_insert_post( $post );
+
+			if( !empty($c_fields) ) {
+				foreach ($meta[$idx] as $k => $v) {
+					update_post_meta( $post["id"], 'wpcf-'. $k, $v );
+				}
+			}
 
 			// catch error if insert is invalid
-			if( is_wp_error( $post['id'] ) ) {
-				$errors[] = $post['id']->get_error_message();
+			if( is_wp_error( $post["id"] ) ) {
+				$errors[] = $post["id"]->get_error_message();
 			}
 			else {
 				$count++;
@@ -292,14 +320,10 @@ class Smashstack_Csv_Importer_Admin {
 			if( $count > 0 ) {
 				$response['message'] =  '<b>'. $count .'</b> successfully added posts.<br>';
 			}
-			if( $c_count > 0 ) {
-				$response['message'] .=  '<b>'. $c_count .'</b> updated post content.<br>';
-			}
-			if( $skip > 0 ) {
-				$response['message'] .=  '<b>'. $skip .'</b> skipped duplicate posts.';
+			if( $update_count > 0 ) {
+				$response['message'] .=  '<b>'. $update_count .'</b> updated post content.<br>';
 			}
 		}
-
 
 		echo json_encode( $response );
 
@@ -368,12 +392,49 @@ class Smashstack_Csv_Importer_Admin {
 	public function post_exists($str, $column) {
 		$wpdb = $this->wpdb;
 		$post_type = $this->post_type;
+		$str = trim($str);
 
 		// Get an array of all posts within our custom post type
-		$posts = $wpdb->get_col( "SELECT {$column} FROM {$wpdb->posts} WHERE post_type = '{$post_type}' LIMIT 7000" );
+		if( $column == 'post_name' ) {
+			$posts = $wpdb->get_col( "SELECT post_name FROM {$wpdb->posts} WHERE post_type = '{$post_type}' LIMIT 7000" );
+			$str = strtolower($str);
+		}
+		else {
+			$posts = $wpdb->get_col( "SELECT post_title FROM {$wpdb->posts} WHERE post_type = '{$post_type}' LIMIT 7000" );
+		}
 
 		// Check if the passed title exists in array
-		return in_array( strtolower($str), $posts );
+		return in_array( $str, $posts );
+	}
+
+	/**
+	 *
+	 * get single post by title, return post ID
+	 *
+	 */
+	public function get_post_by_title($title) {
+		$post_type = $this->post_type;
+		$wpdb = $this->wpdb;
+		$title = trim($title);
+
+		$post = $wpdb->get_row( "SELECT ID FROM {$wpdb->posts} WHERE post_type = '{$post_type}' AND post_title = '{$title}' " );
+
+		return $post->ID;
+	}
+
+	/**
+	 *
+	 * get single post by name, return post ID
+	 *
+	 */
+	public function get_post_by_name($name) {
+		$post_type = $this->post_type;
+		$wpdb = $this->wpdb;
+		$name = trim($name);
+
+		$post = $wpdb->get_row( "SELECT ID FROM {$wpdb->posts} WHERE post_type = '{$post_type}' AND post_name = '{$name}' " );
+
+		return $post->ID;
 	}
 
 }
