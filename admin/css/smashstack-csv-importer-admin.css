@@ -3,13 +3,10 @@
  * included in this file.
  */
 
- .form {
-   width: 400px;
- }
 
  .file-upload-wrapper {
    position: relative;
-   width: 100%;
+   width: 400px;
    height: 60px;
  }
  .file-upload-wrapper:after {
@@ -123,4 +120,41 @@
   color: #BBB;
   text-decoration: none;
   display: none;
+  vertical-align: middle;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.field-line input[type="text" ] {
+  padding: 5px 10px;
+  font-size: 14px;
+  border-radius: 3px;
+  border: 1px solid #CCC;
+  width: 260px;
+  vertical-align: middle;
+}
+
+.field-line select {
+  padding: 5px 10px;
+  font-size: 14px;
+  border-radius: 3px;
+  border: 1px solid #CCC;
+  height: auto;
+  vertical-align: middle;
+}
+
+.field-line span {
+  vertical-align: middle;
+}
+
+.post-fields, .custom-fields {
+  display: inline-block;
+}
+
+.pull-right {
+  float: right;
+}
+
+.col-title {
+  width: 365px;
 }

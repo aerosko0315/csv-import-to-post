@@ -208,7 +208,7 @@ class Smashstack_Csv_Importer_Admin {
 				$author_id = username_exists( $post["post_author"] );
 				if ( !$author_id ) {
 					$random_password = wp_generate_password( $length=12, $include_standard_special_chars=false );
-					$author_id = wp_create_user( $author, $random_password );
+					$author_id = wp_create_user( $post["post_author"], $random_password );
 				}
 
 				$post["post_author"] = $author_id;
@@ -220,11 +220,11 @@ class Smashstack_Csv_Importer_Admin {
 			}
 			if( isset($post["post_date"]) ) {
 				//convert string date to valid date format
-				$post["post_date"] = date( 'Y-m-d H:i:s', strtotime($date_published) );
+				$post["post_date"] = date( 'Y-m-d H:i:s', strtotime($post["post_date"]) );
 			}
 			if( isset($post["post_modified"]) ) {
 				//convert string date to valid date format
-				$post["post_modified"] = date( 'Y-m-d H:i:s', strtotime($date_modified) );
+				$post["post_modified"] = date( 'Y-m-d H:i:s', strtotime($post["post_modified"]) );
 			}
 			if( isset($post["post_category"]) ) {
 				//insert categories, convert to IDs
@@ -247,7 +247,7 @@ class Smashstack_Csv_Importer_Admin {
 			}
 			if( isset($post["tags_input"]) ) {
 				//convert tags to array and remove whitespaces
-				$post["tags_input"] = array_map( 'trim', explode(',', $tags) );
+				$post["tags_input"] = array_map( 'trim', explode(',', $post["tags_input"]) );
 			}
 			if( isset( $post["post_name"] ) ) {
 				// get post slug from URL

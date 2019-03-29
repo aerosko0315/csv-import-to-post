@@ -26,6 +26,7 @@
 		    </div>
 		    <div class="post-fields">
 		    	<h3>Post Fields</h3>
+		    	<p class="col-title"><span>Headers</span><span class="pull-right">Post Fields</span></p>
 		    	<div class="post-field-wrp">
 		    		<div class="field-line" data-field="field1">
 			    		<input type="text" name="p_fields[key]">
@@ -46,8 +47,11 @@
 		    	</div>
 		    	<a href="#" class="add_field_condition" data-count="1">Add Condition</a>
 		    </div>
+		    <br>
+		    <br>
 		    <div class="custom-fields">
 		    	<h3>Custom Fields Settings</h3>
+		    	<p class="col-title"><span>Headers</span><span class="pull-right">Post Fields</span></p>
 		    	<div class="custom-field-wrp">
 		    		<div class="field-line" data-field="field1">
 			    		<input type="text" name="c_fields[key]">

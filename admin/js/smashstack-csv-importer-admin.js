@@ -121,7 +121,7 @@ Upload.prototype.doUpload = function () {
             }
             return myXhr;
         },
-        success: function (data) { ///console.log(data);
+        success: function (data) { //console.log(data);
             var output = $.parseJSON(data);
 
             if( output.status == 'Success' ) {
@@ -143,8 +143,7 @@ Upload.prototype.doUpload = function () {
         data: formData,
         cache: false,
         contentType: false,
-        processData: false,
-        timeout: 60000
+        processData: false
     });
 };
 
